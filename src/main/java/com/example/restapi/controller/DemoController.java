@@ -16,21 +16,18 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/user")
 public class DemoController {
 
-    private final CustomerRepository customerRepository;
     private final CustomerService customerService;
 
-    public DemoController(CustomerRepository customerRepository, CustomerService customerService) {
-        this.customerRepository = customerRepository;
+    public DemoController(CustomerService customerService) {
         this.customerService = customerService;
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CustomerOutput> getCustomer(@PathVariable int id) {
 
-       return customerRepository.findById(id)
-        .map(customer -> ResponseEntity.status(HttpStatus.OK)
-                .body(customerService.mapOutput(customer)))
-        .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        return customerService.getCustomerById(id)
+                .map(customerOutput -> ResponseEntity.status(HttpStatus.OK).body(customerOutput))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
 
 //        return ResponseEntity.status(HttpStatus.OK).body(customerOutput);
     }
@@ -39,7 +36,7 @@ public class DemoController {
     public ResponseEntity<?> saveCustomer(@Valid @RequestBody CustomerInput customerInput) {
 
         Customer customer = customerService.mapCustomer(customerInput);
-        Customer customerSaved = customerRepository.save(customer);
+        Customer customerSaved = customerService.saveCustomer(customer);
         CustomerOutput customerOutput = customerService.mapOutput(customerSaved);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(customerOutput);
